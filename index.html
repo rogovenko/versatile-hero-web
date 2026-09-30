@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>MazeBuilderNew</title>
+  <style>
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #141c21; }
+    #unity-canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
+    #loading { position: fixed; inset: 0; display: grid; place-content: center; gap: 16px;
+      color: #e1e7eb; font: 16px system-ui, sans-serif; text-align: center; background: #141c21; }
+    #loading[hidden] { display: none; }
+    progress { width: min(280px, 75vw); accent-color: #cfb981; }
+    #status { max-width: min(480px, 85vw); overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <canvas id="unity-canvas" width="800" height="450" tabindex="0"></canvas>
+  <div id="loading" role="status"><div id="status">Loading MazeBuilderNew…</div><progress id="progress" max="1" value="0"></progress></div>
+  <script src="Build/WebRelease.loader.js"></script>
+  <script>
+    const canvas = document.getElementById("unity-canvas");
+    const loading = document.getElementById("loading");
+    const status = document.getElementById("status");
+    const progress = document.getElementById("progress");
+    const config = {
+      arguments: [],
+      dataUrl: "Build/WebRelease.data.unityweb",
+      frameworkUrl: "Build/WebRelease.framework.js.unityweb",
+      codeUrl: "Build/WebRelease.wasm.unityweb",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "DefaultCompany",
+      productName: "MazeBuilderNew",
+      productVersion: "0.1.0",
+      // Keep dense phone displays from multiplying fill-rate and render-target memory.
+      devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5,
+        1920 / Math.max(window.innerWidth, window.innerHeight, 1)),
+      // AchievementProgressStore writes files under persistentDataPath.
+      autoSyncPersistentDataPath: true,
+      showBanner(message, type) {
+        if (type === "error") {
+          loading.hidden = false;
+          progress.hidden = true;
+          status.textContent = message;
+        } else {
+          console.warn(message);
+        }
+      }
+    };
+    async function selectTextureData() {
+      const probe = document.createElement("canvas");
+      const gl = probe.getContext("webgl2");
+      const supportsAstc = gl && gl.getExtension("WEBGL_compressed_texture_astc");
+      if (gl) {
+        const lose = gl.getExtension("WEBGL_lose_context");
+        if (lose) lose.loseContext();
+      }
+      if (!supportsAstc) return;
+      try {
+        const response = await fetch("Build/texture-variants.json", { cache: "no-cache" });
+        if (response.ok) {
+          const variants = await response.json();
+          if (typeof variants.astc === "string" && variants.astc.startsWith("Build/"))
+            config.dataUrl = variants.astc;
+        }
+      } catch (error) {
+        console.warn("Using the default texture data.", error);
+      }
+    }
+    selectTextureData().then(() => createUnityInstance(canvas, config, value => { progress.value = value; }))
+      .then(instance => {
+        window.unityInstance = instance;
+        loading.hidden = true;
+        canvas.focus();
+      })
+      .catch(error => {
+        loading.hidden = false;
+        progress.hidden = true;
+        status.textContent = "Unable to start the game. Please reload the page. " + error;
+      });
+  </script>
+</body>
+</html>
