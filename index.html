@@ -18,6 +18,7 @@
       border-radius: 10px; background: #141c21cc; color: #e1e7eb; cursor: pointer;
       touch-action: manipulation; }
     #fullscreen-button:hover, #fullscreen-button:focus-visible { background: #293b43; outline: 2px solid #cfb981; }
+    #fullscreen-button[hidden] { display: none; }
     #fullscreen-button svg { width: 22px; height: 22px; pointer-events: none; }
     #fullscreen-message { position: fixed; top: calc(max(8px, env(safe-area-inset-top)) + 48px);
       left: max(8px, env(safe-area-inset-left)); z-index: 10; max-width: min(300px, 80vw);
@@ -49,6 +50,7 @@
     const isFullscreen = () => Boolean(document.fullscreenElement || document.webkitFullscreenElement);
     function syncFullscreen() {
       const active = isFullscreen();
+      fullscreenButton.hidden = active;
       enteredFullscreen ||= active;
       fullscreenButton.setAttribute("aria-pressed", String(active));
       const label = active ? "Exit fullscreen" : "Enter fullscreen";
