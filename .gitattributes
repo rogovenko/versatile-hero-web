@@ -1,0 +1,5 @@
+# Preserve the exact bytes emitted by Unity, including HTML and JavaScript.
+index.html -text
+Build/** -text
+.github/workflows/*.yml text eol=lf
+build-sha256.txt text eol=lf

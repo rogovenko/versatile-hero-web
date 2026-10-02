@@ -1,0 +1,47 @@
+name: Publish Web release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/configure-pages@v5
+      - name: Assemble the original Unity Web build
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site/Build
+          cp index.html .nojekyll _site/
+          cp Build/WebRelease.loader.js Build/WebRelease.framework.js.unityweb Build/WebRelease.wasm.unityweb _site/Build/
+          cat Build/WebRelease.data.unityweb.part* > _site/Build/WebRelease.data.unityweb
+          (cd _site && sha256sum --check ../build-sha256.txt)
+          cp build-sha256.txt _site/
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
