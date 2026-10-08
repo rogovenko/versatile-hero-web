@@ -3,3 +3,6 @@ index.html -text
 Build/** -text
 .github/workflows/*.yml text eol=lf
 build-sha256.txt text eol=lf
+preview/index.html -text
+preview/Build/** -text
+preview/build-sha256.txt text eol=lf

@@ -18,16 +18,23 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: actions/configure-pages@v5
-      - name: Assemble the original Unity Web build
+      - name: Assemble the release and optional preview
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p _site/Build
-          cp index.html .nojekyll _site/
-          cp Build/WebRelease.loader.js Build/WebRelease.framework.js.unityweb Build/WebRelease.wasm.unityweb _site/Build/
-          cat Build/WebRelease.data.unityweb.part* > _site/Build/WebRelease.data.unityweb
-          (cd _site && sha256sum --check ../build-sha256.txt)
-          cp build-sha256.txt _site/
+          assemble_build() {
+            local source="$1" output="$2" name="$3"
+            mkdir -p "$output/Build"
+            cp "$source/index.html" "$source/build-sha256.txt" "$output/"
+            cp "$source/Build/$name.loader.js" "$source/Build/$name.framework.js.unityweb" "$source/Build/$name.wasm.unityweb" "$output/Build/"
+            cat "$source/Build/$name.data.unityweb".part* > "$output/Build/$name.data.unityweb"
+            (cd "$output" && sha256sum --check build-sha256.txt)
+          }
+          assemble_build . _site WebRelease
+          if [ -d preview ]; then
+            assemble_build preview _site/preview WebPreview
+          fi
+          cp .nojekyll _site/
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site
