@@ -6,3 +6,6 @@ build-sha256.txt text eol=lf
 preview/index.html -text
 preview/Build/** -text
 preview/build-sha256.txt text eol=lf
+beta/index.html -text
+beta/Build/** -text
+beta/build-sha256.txt text eol=lf
