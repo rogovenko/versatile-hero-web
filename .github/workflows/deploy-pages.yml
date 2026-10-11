@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: actions/configure-pages@v5
-      - name: Assemble the release and optional preview and beta
+      - name: Assemble the release and optional preview, beta, and primitive
         shell: bash
         run: |
           set -euo pipefail
@@ -36,6 +36,9 @@ jobs:
           fi
           if [ -d beta ]; then
             assemble_build beta _site/beta WebBeta
+          fi
+          if [ -d primitive ]; then
+            assemble_build primitive _site/primitive WebPrimitive
           fi
           cp .nojekyll _site/
       - uses: actions/upload-pages-artifact@v4

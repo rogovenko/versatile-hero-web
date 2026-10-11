@@ -9,3 +9,6 @@ preview/build-sha256.txt text eol=lf
 beta/index.html -text
 beta/Build/** -text
 beta/build-sha256.txt text eol=lf
+primitive/index.html -text
+primitive/Build/** -text
+primitive/build-sha256.txt text eol=lf
