@@ -126,27 +126,8 @@
         }
       }
     };
-    async function selectTextureData() {
-      const probe = document.createElement("canvas");
-      const gl = probe.getContext("webgl2");
-      const supportsAstc = gl && gl.getExtension("WEBGL_compressed_texture_astc");
-      if (gl) {
-        const lose = gl.getExtension("WEBGL_lose_context");
-        if (lose) lose.loseContext();
-      }
-      if (!supportsAstc) return;
-      try {
-        const response = await fetch("Build/texture-variants.json", { cache: "no-cache" });
-        if (response.ok) {
-          const variants = await response.json();
-          if (typeof variants.astc === "string" && variants.astc.startsWith("Build/"))
-            config.dataUrl = variants.astc;
-        }
-      } catch (error) {
-        console.warn("Using the default texture data.", error);
-      }
-    }
-    selectTextureData().then(() => createUnityInstance(canvas, config, value => { progress.value = value; }))
+    // Each channel ships one DXT data file; no texture-variant manifest or probe context is needed.
+    createUnityInstance(canvas, config, value => { progress.value = value; })
       .then(instance => {
         window.unityInstance = instance;
         loading.hidden = true;
