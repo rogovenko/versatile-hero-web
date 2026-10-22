@@ -102,6 +102,11 @@
     document.addEventListener("pointerup", event => {
       if (!enteredFullscreen && !fullscreenButton.contains(event.target)) enterFullscreen();
     }, { once: true });
+    // Unity's persistent download cache clones large responses before JS gzip
+    // decompression. Avoid that extra buffering on iOS, including desktop-mode iPad.
+    // This does not clear IndexedDB or the game's persistent save files.
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     const config = {
       arguments: [],
       dataUrl: "Build/WebPreview.data.unityweb",
@@ -111,6 +116,11 @@
       companyName: "DefaultCompany",
       productName: "MazeBuilderNew",
       productVersion: "0.1.0",
+      cacheControl(url) {
+        if (isIOS) return "no-store";
+        return url === config.dataUrl || /\.bundle/.test(url)
+          ? "must-revalidate" : "no-store";
+      },
       // Keep dense phone displays from multiplying fill-rate and render-target memory.
       devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5,
         1920 / Math.max(window.innerWidth, window.innerHeight, 1)),
